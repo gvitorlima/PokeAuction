@@ -8,8 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Auction extends Model
 {
     use HasFactory;
-
-    public function __construct()
+    public function dailyAuction()
     {
     }
 }

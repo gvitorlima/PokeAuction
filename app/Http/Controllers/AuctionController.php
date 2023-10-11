@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\External\PokeApiClient;
 use App\Http\Services\AuctionService;
 
 use Illuminate\Routing\Controller;
@@ -19,8 +20,20 @@ class AuctionController extends Controller
     {
         try {
 
-            $this->auctionService->dailyAuction();
+            echo '<pre>';
+            print_r((new PokeApiClient)->dailyPokemons());
+            echo '</pre>';
+            exit;
+
+            // $this->auctionService->dailyAuction();
         } catch (Exception $error) {
+
+            $response = [
+                "code" => $error->getCode(),
+                "message" => $error->getMessage()
+            ];
+
+            return response()->json($response, $error->getCode());
         }
     }
 }
