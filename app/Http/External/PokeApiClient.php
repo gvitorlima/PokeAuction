@@ -16,8 +16,8 @@ class PokeApiClient extends Client
         $increaseValue;
 
     private int
-        $auctionDailyQuantity,
-        $pokemonsQuantity;
+        $numberOfPokemonsForAuction,
+        $numberOfExistingPokemons;
 
     public function __construct(?ClientInterface $client = null)
     {
@@ -27,8 +27,8 @@ class PokeApiClient extends Client
         $this->uri = env("POKE_API_URI");
         $this->increaseValue = env("INCREASE_POKEMON_VALUE");
 
-        $this->auctionDailyQuantity = env("DAILY_QUANTITY");
-        $this->pokemonsQuantity = env("POKE_API_QUANTITY");
+        $this->numberOfPokemonsForAuction = env("DAILY_QUANTITY");
+        $this->numberOfExistingPokemons = env("POKE_API_QUANTITY");
     }
 
     /**
@@ -66,9 +66,9 @@ class PokeApiClient extends Client
         $quantity = 0;
 
         $pokemonsId = [];
-        for ($quantity ?? $this->auctionDailyQuantity; $quantity < $this->auctionDailyQuantity; $quantity++) {
+        for ($quantity ?? $this->numberOfPokemonsForAuction; $quantity < $this->numberOfPokemonsForAuction; $quantity++) {
 
-            $pokemonsId[] = rand(1, $this->pokemonsQuantity);
+            $pokemonsId[] = rand(1, $this->numberOfExistingPokemons);
         }
 
         return $pokemonsId;
@@ -91,10 +91,11 @@ class PokeApiClient extends Client
      */
     private function handleCheckDataValidity(array $pokemonsId)
     {
-        if (count($pokemonsId) < $this->pokemonsQuantity) {
+
+        if (count($pokemonsId) < $this->numberOfPokemonsForAuction) {
 
             $pokemonsId = array_unique($pokemonsId);
-            $missingQuantity = $this->pokemonsQuantity - count($pokemonsId);
+            $missingQuantity = $this->numberOfPokemonsForAuction - count($pokemonsId);
 
             $missingIds = $this->randomizePokemonsId($missingQuantity);
             $pokemonsId = [...$missingIds, ...$pokemonsId];
