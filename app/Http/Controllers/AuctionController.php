@@ -21,7 +21,7 @@ class AuctionController extends Controller
         try {
 
             echo '<pre>';
-            print_r((new PokeApiClient)->dailyPokemons());
+            print_r($this->auctionService->dailyPokemons());
             echo '</pre>';
             exit;
 
