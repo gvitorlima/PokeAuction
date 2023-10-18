@@ -10,7 +10,7 @@ abstract class Client
 {
     protected ClientInterface $client;
 
-    public function sendRequest(string $url, string $method = "GET", array $options = null): ResponseInterface|null
+    public function sendRequest(string $url, string $method = "GET", array $options = null): ResponseInterface|array
     {
         try {
 
