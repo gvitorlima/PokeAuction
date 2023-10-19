@@ -58,12 +58,12 @@ class PokemonService
     }
 
     /**
-     * Concatena a URL de pesquisa com o ID do pokemon
+     * Concatena a URL de pesquisa com o ID ou NOME do pokemon
      *
-     * @param int $id, ID do pokemon
+     * @param int $searchParam, ID do pokemon
      */
-    private function mountPokemonUrlById(int $id): string
+    private function mountPokemonUrlById(int|string $searchParam): string
     {
-        return $this->uri . "/$id";
+        return $this->uri . "/$searchParam";
     }
 }

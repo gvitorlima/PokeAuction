@@ -46,11 +46,6 @@ class AuctionService
                 return $pokemon;
             }, $pokemonsId);
 
-            echo '<pre>';
-            print_r($pokemons);
-            echo '</pre>';
-            exit;
-
             return $pokemons;
         } catch (Exception $requestError) {
             throw $requestError;
