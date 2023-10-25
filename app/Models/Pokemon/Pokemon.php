@@ -9,17 +9,23 @@ class Pokemon extends Model
 {
     use HasFactory;
 
-    protected $table = "POKEMON";
+    protected $table = "pokemon";
+    public $timestamps = false;
 
-    public function pokemon(int $pokemonId)
+    protected $fillable = [
+        'base_experience',
+        'height',
+        'pokemon_id',
+        'pokemon_name',
+        'weight',
+    ];
+
+    public function __construct()
     {
     }
 
-    public function pokemonAbilities(int $pokemonId)
+    public function createPokemon(array $pokemonData)
     {
-    }
-
-    public function pokemonTypes(int $pokemonId)
-    {
+        
     }
 }
