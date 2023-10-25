@@ -4,7 +4,13 @@ namespace App\Http\Services;
 
 use App\Http\External\ClientPokeApi\ClientPokeApi;
 use App\Http\External\ClientPokeApi\ClientPokeApiDto;
+use App\Models\Pokemon\Pokemon;
+use App\Models\Pokemon\PokemonRelations\Ability;
+use App\Models\Pokemon\PokemonRelations\PokemonAbility;
+use App\Models\Pokemon\PokemonRelations\PokemonStatus;
+use App\Models\Pokemon\PokemonRelations\PokemonType;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class PokemonService
 {
@@ -15,8 +21,14 @@ class PokemonService
         $numberOfExistingPokemons;
 
     public function __construct(
+        private Pokemon $pokemon,
+
+        private PokemonType $pokemonType,
+        private PokemonStatus $pokemonStatus,
+        private PokemonAbility $pokemonAbility,
+
         private ClientPokeApi $client,
-        private ClientPokeApiDto $clientDto
+        private ClientPokeApiDto $clientDto,
     ) {
 
         $this->uri = env("POKE_API_URI");
@@ -24,6 +36,10 @@ class PokemonService
         $this->numberOfExistingPokemons = env("POKE_API_QUANTITY");
     }
 
+    /**
+     * Busca o pokemon pelo ID no banco, caso não exista é realizada a requisição para o serviço da
+     * PokeApi e retornado ao cliente.
+     */
     public function pokemonById(int $pokemonId)
     {
         if ($pokemonId > $this->numberOfExistingPokemons || $pokemonId < 1)
@@ -31,17 +47,68 @@ class PokemonService
 
         // TODO Realizar a busca com o banco de dados antes de usar a API, banco incompleto ainda!
 
-        $pokemon =  $this->requestExternalService($pokemonId);
-        return $pokemon;
+        $pokemonData = $this->requestExternalService($pokemonId);
+
+        // Salva um novo pokemon no banco
+        $this->handleSavePokemonInDatabase($pokemonData);
+        return $pokemonData;
     }
 
+    private function handleSavePokemonInDatabase(array $pokemonData): bool
+    {
+        if ($this->verifyPokemonData($pokemonData) == false)
+            throw new Exception("Dados para criação de um pokemon inválidos.", 500);
+
+        try {
+
+            DB::beginTransaction();
+
+            // $this->pokemonType->create($pokemonData);
+            // $this->pokemonStatus->create($pokemonData);
+            // $this->pokemonAbility->create($pokemonData);
+
+            $this->pokemon->create($pokemonData);
+
+            // DB::commit();
+
+            return true;
+        } catch (Exception $error) {
+
+            DB::rollBack();
+            throw $error;
+        }
+    }
+
+    /**
+     * Verifica a existência das chaves usadas para compor um pokemon no banco
+     * com suas habilidades, status e seu/seus tipos.
+     *
+     * @param array $pokemonData,   Dados de um pokemon vindos da api PokeApi
+     * @return bool,                Resultado da verificação das chaves
+     */
+    private function verifyPokemonData(array $pokemonData): bool
+    {
+        return match ($pokemonData) {
+            !$pokemonData["stats"] => false,
+            !$pokemonData["type"]  => false,
+            !$pokemonData["abilities"] => false,
+
+            default => true
+        };
+    }
+
+    /**
+     * Busca o pokemon pelo NOME no banco, caso não exista é realizada a requisição para o serviço da
+     * PokeApi e retornado ao cliente.
+     */
     public function pokemonByName(string $pokemonName)
     {
         $pokemon =  $this->requestExternalService($pokemonName);
     }
 
     /**
-     * Monta a URL de busca com base no ID ou NOME de um Pokemon
+     * Monta a URL de busca com base no ID ou NOME de um Pokemon e realiza a requisição na API
+     * da PokeApi
      *
      * @param int|string $searchParameter,  Parâmetro de busca associado a um pokemon podendo
      *                                      ser seu NOME ou ID
@@ -54,6 +121,10 @@ class PokemonService
                 ->getContents()
         );
 
+        echo '<pre>';
+        print_r($pokemon);
+        echo '</pre>';
+        exit;
         return $pokemon;
     }
 
