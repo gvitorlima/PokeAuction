@@ -16,15 +16,15 @@ enum PokemonStatus: string
      *
      * @return array,   array contendo os arrays já formatados.
      */
-    public static function seedStatus(): array
+    public static function seed(): array
     {
         return [
-            ['id' => 1, 'name' => self::hp],
-            ['id' => 2, 'name' => self::attack],
-            ['id' => 3, 'name' => self::defense],
-            ['id' => 4, 'name' => self::speed],
-            ['id' => 5, 'name' => self::specialAttack],
-            ['id' => 6, 'name' => self::specialDefense],
+            ['id' => 1, 'name' => self::hp->value],
+            ['id' => 2, 'name' => self::attack->value],
+            ['id' => 3, 'name' => self::defense->value],
+            ['id' => 4, 'name' => self::speed->value],
+            ['id' => 5, 'name' => self::specialAttack->value],
+            ['id' => 6, 'name' => self::specialDefense->value],
         ];
     }
 };
