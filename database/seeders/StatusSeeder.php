@@ -20,11 +20,7 @@ class StatusSeeder extends Seeder
          * Verifica se os dados já foram inseridos antes de realizar a inserção
          */
         $totalRecords = DB::table('status')->count();
-        if (!$totalRecords > 0) {
-
-            Status::factory()->createMany([
-                EnumPokemonStatus::seedStatus()
-            ]);
-        }
+        if (!$totalRecords > 0)
+            Status::factory()->createMany(EnumPokemonStatus::seed());
     }
 }
