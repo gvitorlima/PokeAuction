@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('pokemon', function (Blueprint $blueprint) {
             $blueprint->increments('id');
 
-            $blueprint->integer('pokemon_id', false);
+            $blueprint->integer('pokemon_id', false)->unique();
 
             $blueprint->float('base_experience', 6)->nullable();
             $blueprint->float('height', 6);
