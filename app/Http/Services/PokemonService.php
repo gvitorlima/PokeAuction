@@ -4,11 +4,16 @@ namespace App\Http\Services;
 
 use App\Http\External\ClientPokeApi\ClientPokeApi;
 use App\Http\External\ClientPokeApi\ClientPokeApiDto;
+
+use App\Enums\PokemonType as EnumPokemonType;
+use App\Enums\PokemonStatus as EnumPokemonStatus;
+
 use App\Models\Pokemon\Pokemon;
 use App\Models\Pokemon\PokemonRelations\Ability;
 use App\Models\Pokemon\PokemonRelations\PokemonAbility;
 use App\Models\Pokemon\PokemonRelations\PokemonStatus;
 use App\Models\Pokemon\PokemonRelations\PokemonType;
+
 use Exception;
 use Illuminate\Support\Facades\DB;
 
@@ -21,14 +26,16 @@ class PokemonService
         $numberOfExistingPokemons;
 
     public function __construct(
-        private Pokemon $pokemon,
+        private Pokemon $modelPokemon,
 
-        private PokemonType $pokemonType,
-        private PokemonStatus $pokemonStatus,
-        private PokemonAbility $pokemonAbility,
+        private ability $modelAbility,
 
-        private ClientPokeApi $client,
-        private ClientPokeApiDto $clientDto,
+        private PokemonType     $modelPokemonType,
+        private PokemonStatus   $modelPokemonStatus,
+        private PokemonAbility  $modelPokemonAbility,
+
+        private ClientPokeApi       $clientPokeApi,
+        private ClientPokeApiDto    $clientPokeApiDto,
     ) {
 
         $this->uri = env("POKE_API_URI");
@@ -47,54 +54,108 @@ class PokemonService
 
         // TODO Realizar a busca com o banco de dados antes de usar a API, banco incompleto ainda!
 
-        $pokemonData = $this->requestExternalService($pokemonId);
+        $pokemon = $this->requestExternalService($pokemonId);
 
         // Salva um novo pokemon no banco
-        $this->handleSavePokemonInDatabase($pokemonData);
-        return $pokemonData;
+        $this->handleSavePokemonInDatabase($pokemon);
+        return $pokemon;
     }
 
-    private function handleSavePokemonInDatabase(array $pokemonData): bool
+    /**
+     * Handle que delega a invocação das models para a inserção de um novo pokemon no banco de dados
+     *
+     * @param array $pokemon,   Dados de um pokemon já padronizados
+     */
+    private function handleSavePokemonInDatabase(array $pokemon): bool
     {
-        if ($this->verifyPokemonData($pokemonData) == false)
-            throw new Exception("Dados para criação de um pokemon inválidos.", 500);
-
         try {
 
-            DB::beginTransaction();
+            $newPokemon = $this->modelPokemon::create($pokemon);
 
-            // $this->pokemonType->create($pokemonData);
-            // $this->pokemonStatus->create($pokemonData);
-            // $this->pokemonAbility->create($pokemonData);
-
-            $this->pokemon->create($pokemonData);
-
-            // DB::commit();
+            $this->aggregatePokemonTypes($newPokemon, $pokemon['type']);
+            $this->aggregatePokemonStatus($newPokemon, $pokemon['stats']);
+            $this->aggregatePokemonAbilities($newPokemon, $pokemon['abilities']);
 
             return true;
         } catch (Exception $error) {
 
             DB::rollBack();
+            echo '<pre>';
+            print_r($error->getMessage());
+            echo '</pre>';
+            exit;
             throw $error;
         }
     }
 
     /**
-     * Verifica a existência das chaves usadas para compor um pokemon no banco
-     * com suas habilidades, status e seu/seus tipos.
+     * Função contendo a lógica de agregação de valores/relacionamentos dos tipos de um pokemon especifico
      *
-     * @param array $pokemonData,   Dados de um pokemon vindos da api PokeApi
-     * @return bool,                Resultado da verificação das chaves
+     * @param array $pokemonTypes   , Array contendo os tipos do pokemon especifico
      */
-    private function verifyPokemonData(array $pokemonData): bool
+    private function aggregatePokemonTypes(Pokemon $pokemon, array $pokemonTypes): void
     {
-        return match ($pokemonData) {
-            !$pokemonData["stats"] => false,
-            !$pokemonData["type"]  => false,
-            !$pokemonData["abilities"] => false,
+        foreach ($pokemonTypes as $type) {
 
-            default => true
-        };
+            $type = EnumPokemonType::tryFromName($type);
+            if (empty($type))
+                continue;
+
+            $this->modelPokemonType::created([...$pokemon->toArray(), "type_id" => $type->value]);
+        }
+    }
+
+    /**
+     * Função contendo a lógica de agregação de valores/relacionamentos dos status de um pokemon especifico
+     *
+     * @param array $pokemonStatus  , Array contendo os status do pokemon especifico
+     */
+    private function aggregatePokemonStatus(Pokemon $pokemon, array $pokemonStatus): void
+    {
+        foreach ($pokemonStatus as $status) {
+
+            $enumStatus = EnumPokemonStatus::tryFromName($status["name"]);
+            if (empty($enumStatus))
+                continue;
+
+            $this->modelPokemonStatus::create([
+                ...$pokemon->toArray(),
+                "status_id" => $enumStatus->value,
+                "value" => $status["value"]
+            ]);
+        }
+    }
+
+    /**
+     * Função contendo a lógica de agregação de valores/relacionamentos das habilidades de um pokemon especifico
+     *
+     * @param array $pokemonAbilities   , Array contendo as habilidades do pokemon especifico
+     */
+    private function aggregatePokemonAbilities(Pokemon $pokemon, array $pokemonAbilities): void
+    {
+        // Habilidades não possui Enum pois existem muitas.
+        foreach ($pokemonAbilities as $ability) {
+
+            $pokemonAbility = $this->modelAbility->getByName($ability["name"]);
+            $pokemonAbility = $pokemonAbility->get()->toArray();
+
+            $ability = empty($pokemonAbility) ?
+                $this->createNewAbility($ability["name"]) :
+                $pokemonAbility;
+
+            $this->modelPokemonAbility->created([
+                ...$pokemon->toArray(),
+                "ability_id" => $ability->id
+            ]);
+        }
+    }
+
+    private function createNewAbility(string $name): Ability
+    {
+        $this->modelAbility->createAbility($name);
+        $this->modelAbility->save();
+
+        return $this->modelAbility;
     }
 
     /**
@@ -113,18 +174,14 @@ class PokemonService
      * @param int|string $searchParameter,  Parâmetro de busca associado a um pokemon podendo
      *                                      ser seu NOME ou ID
      */
-    private function requestExternalService(int|string $searchParameter)
+    private function requestExternalService(int|string $searchParameter): array
     {
-        $pokemon = $this->client->sendRequest($this->mountPokemonUrlById($searchParameter), "GET");
-        $pokemon = $this->clientDto->padronize(
+        $pokemon = $this->clientPokeApi->sendRequest($this->mountPokemonUrlById($searchParameter), "GET");
+        $pokemon = $this->clientPokeApiDto->padronize(
             $pokemon->getBody()
                 ->getContents()
         );
 
-        echo '<pre>';
-        print_r($pokemon);
-        echo '</pre>';
-        exit;
         return $pokemon;
     }
 

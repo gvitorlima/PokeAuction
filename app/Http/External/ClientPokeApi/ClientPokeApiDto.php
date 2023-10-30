@@ -85,9 +85,7 @@ class ClientPokeApiDto
         $pokemonTypes = $pokemonData["types"];
         $pokemonTypes = array_map(function (array $pokemonType) {
 
-            return [
-                "type" => $pokemonType["type"]["name"]
-            ];
+            return $pokemonType["type"]["name"];
         }, $pokemonTypes);
 
         return $pokemonTypes;
