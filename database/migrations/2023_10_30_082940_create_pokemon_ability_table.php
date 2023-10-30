@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
 
-        Schema::create('pokemon_ability', function (Blueprint $blueprint) {
-            $blueprint->increments('id');
+        Schema::create("pokemon_ability", function (Blueprint $blueprint) {
+            $blueprint->id();
 
-            $blueprint->foreignId('pokemon_id')->constrained('pokemon', 'pokemon_id');
-            $blueprint->foreignId('ability_id')->constrained('ability', 'id');
+            $blueprint->foreignId("pokemon_id")->constrained("pokemon", "pokemon_id");
+            $blueprint->foreignId("ability_id")->constrained("ability", "id");
         });
     }
 
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pokemon_ability');
+        Schema::dropIfExists("pokemon_ability");
     }
 };
