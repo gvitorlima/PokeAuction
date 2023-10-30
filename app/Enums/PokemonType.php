@@ -2,50 +2,74 @@
 
 namespace App\Enums;
 
-use Illuminate\Validation\Rules\Enum;
-
-enum PokemonType: string
+enum PokemonType: int
 {
-    case normal = 'normal';
-    case fire = 'fire';
-    case water = 'water';
-    case grass = 'grass';
-    case electric = 'electric';
-    case ice = 'ice';
-    case fighting = 'fighting';
-    case poison = 'poison';
-    case ground = 'ground';
-    case flying = 'flying';
-    case psychic = 'psychic';
-    case bug = 'bug';
-    case rock = 'rock';
-    case ghost = 'ghost';
-    case dark = 'dark';
-    case steel = 'steel';
-    case fairy = 'fairy';
-    case dragon = 'dragon';
+    case normal = 1;
+    case fire = 2;
+    case water = 3;
+    case grass = 4;
+    case electric = 5;
+    case ice = 6;
+    case fighting = 7;
+    case poison = 8;
+    case ground = 9;
+    case flying = 10;
+    case psychic = 11;
+    case bug = 12;
+    case rock = 13;
+    case ghost = 14;
+    case dark = 15;
+    case steel = 16;
+    case fairy = 17;
+    case dragon = 18;
+
+    public static function tryFromName(string $name): self|array
+    {
+        return match ($name) {
+            self::normal->name   => self::normal,
+            self::fire->name     => self::fire,
+            self::water->name    => self::water,
+            self::grass->name    => self::grass,
+            self::electric->name => self::electric,
+            self::ice->name      => self::ice,
+            self::fighting->name => self::fighting,
+            self::poison->name   => self::poison,
+            self::ground->name   => self::ground,
+            self::flying->name   => self::flying,
+            self::psychic->name  => self::psychic,
+            self::bug->name      => self::bug,
+            self::rock->name     => self::rock,
+            self::ghost->name    => self::ghost,
+            self::dark->name     => self::dark,
+            self::steel->name    => self::steel,
+            self::fairy->name    => self::fairy,
+            self::dragon->name   => self::dragon,
+
+            default => []
+        };
+    }
 
     public static function seed(): array
     {
         return [
-            ['id' => 1, 'name' => self::normal->value],
-            ['id' => 2, 'name' => self::fire->value],
-            ['id' => 3, 'name' => self::water->value],
-            ['id' => 4, 'name' => self::grass->value],
-            ['id' => 5, 'name' => self::electric->value],
-            ['id' => 6, 'name' => self::ice->value],
-            ['id' => 7, 'name' => self::fighting->value],
-            ['id' => 8, 'name' => self::poison->value],
-            ['id' => 9, 'name' => self::ground->value],
-            ['id' => 10, 'name' => self::flying->value],
-            ['id' => 11, 'name' => self::psychic->value],
-            ['id' => 12, 'name' => self::bug->value],
-            ['id' => 13, 'name' => self::rock->value],
-            ['id' => 14, 'name' => self::ghost->value],
-            ['id' => 15, 'name' => self::dark->value],
-            ['id' => 16, 'name' => self::steel->value],
-            ['id' => 17, 'name' => self::fairy->value],
-            ['id' => 18, 'name' => self::dragon->value]
+            ['id' => self::normal->value, 'name' => self::normal->name],
+            ['id' => self::fire->value, 'name' => self::fire->name],
+            ['id' => self::water->value, 'name' => self::water->name],
+            ['id' => self::grass->value, 'name' => self::grass->name],
+            ['id' => self::electric->value, 'name' => self::electric->name],
+            ['id' => self::ice->value, 'name' => self::ice->name],
+            ['id' => self::fighting->value, 'name' => self::fighting->name],
+            ['id' => self::poison->value, 'name' => self::poison->name],
+            ['id' => self::ground->value, 'name' => self::ground->name],
+            ['id' => self::flying->value, 'name' => self::flying->name],
+            ['id' => self::psychic->value, 'name' => self::psychic->name],
+            ['id' => self::bug->value, 'name' => self::bug->name],
+            ['id' => self::rock->value, 'name' => self::rock->name],
+            ['id' => self::ghost->value, 'name' => self::ghost->name],
+            ['id' => self::dark->value, 'name' => self::dark->name],
+            ['id' => self::steel->value, 'name' => self::steel->name],
+            ['id' => self::fairy->value, 'name' => self::fairy->name],
+            ['id' => self::dragon->value, 'name' => self::dragon->name]
         ];
     }
 };
