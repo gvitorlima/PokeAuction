@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create("pokemon_status", function (Blueprint $blueprint) {
             $blueprint->id();
 
-            $blueprint->foreignId("pokemon_id")->constrained("pokemon");
-            $blueprint->foreignId("status_id")->constrained("status");
+            $blueprint->foreignId("pokemon_id")->constrained("pokemon", "pokemon_id");
+            $blueprint->foreignId("status_id")->constrained("status", "id");
 
-            $blueprint->integer("value", 6);
+            $blueprint->integer("value");
         });
     }
 
