@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create("type", function (Blueprint $blueprint) {
             $blueprint->id();
-            $blueprint->string("name", 32);
+            $blueprint->string("name", 26)->unique();
         });
     }
 

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create("ability", function (Blueprint $blueprint) {
             $blueprint->id();
-            $blueprint->string("name", 128);
+            $blueprint->string("name", 128)->unique();
         });
     }
 
