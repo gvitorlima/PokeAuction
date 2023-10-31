@@ -15,9 +15,13 @@ return new class extends Migration
             $blueprint->id();
 
             $blueprint->foreignId("pokemon_id")->constrained("pokemon", "pokemon_id");
-            $blueprint->foreignId("status_id")->constrained("status", "id");
 
-            $blueprint->integer("value");
+            $blueprint->tinyInteger("hp", false);
+            $blueprint->tinyInteger("attack", false);
+            $blueprint->tinyInteger("defense", false);
+            $blueprint->tinyInteger("speed", false);
+            $blueprint->tinyInteger("specialAttack", false);
+            $blueprint->tinyInteger("specialDefense", false);
         });
     }
 

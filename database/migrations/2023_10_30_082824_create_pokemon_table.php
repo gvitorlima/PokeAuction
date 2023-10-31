@@ -16,11 +16,11 @@ return new class extends Migration
 
             $blueprint->integer("pokemon_id", false)->unique();
 
+            $blueprint->string("pokemon_name", 128);
+
             $blueprint->float("base_experience", 6)->nullable();
             $blueprint->float("height", 6);
             $blueprint->float("weight", 6);
-
-            $blueprint->string("pokemon_name", 128);
         });
     }
 
