@@ -15,15 +15,12 @@ class PokemonStatus extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        "attack",
+        "defense",
+        "hp",
         "pokemon_id",
-        "status_id",
-        "value"
+        "specialAttack",
+        "specialDefense",
+        "speed"
     ];
-
-    public function createPokemonStatus(Pokemon $pokemon, EnumPokemonStatus $pokemonStatus, int $value)
-    {
-        $this->pokemon_id = $pokemon->pokemon_id;
-        $this->status_id = $pokemonStatus->value;
-        $this->value = $value;
-    }
 }

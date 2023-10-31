@@ -20,10 +20,4 @@ class PokemonAbility extends Model
         'pokemon_id',
         'ability_id'
     ];
-
-    public function createPokemonAbility(Pokemon $pokemon, Ability $ability)
-    {
-        $this->pokemon_id = $pokemon->pokemon_id;
-        $this->ability_id = $ability->id;
-    }
 }

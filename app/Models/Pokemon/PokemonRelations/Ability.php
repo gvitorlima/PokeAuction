@@ -2,6 +2,7 @@
 
 namespace App\Models\Pokemon\PokemonRelations;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,13 +18,8 @@ class Ability extends Model
         "name"
     ];
 
-    public function getByName(string $name)
+    public function getByName(string $name): Builder
     {
-        return DB::table($this->table)->where("name", "=", $name);
-    }
-
-    public function createAbility(string $name)
-    {
-        $this->name = $name;
+        return self::where('name', $name);
     }
 }

@@ -21,20 +21,4 @@ class PokemonType extends Model
         'pokemon_id',
         'type_id'
     ];
-
-    public function createPokemonType(Pokemon $pokemon, EnumPokemonType $type)
-    {
-        $this->pokemon_id = $pokemon->pokemon_id;
-        $this->type_id = $type->value;
-    }
-
-    // public function pokemon()
-    // {
-    //     return $this->hasOne(Pokemon::class, 'pokemon_id', 'pokemon_id');
-    // }
-
-    // public function type()
-    // {
-    //     return $this->hasMany(Type::class, 'id', 'type_id');
-    // }
 }
