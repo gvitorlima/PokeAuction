@@ -48,7 +48,7 @@ class ClientPokeApiDto
     {
         return [
             ...$this->extractPokemonData($pokemonData),
-            "stats" => $this->extractPokemonStats($pokemonData),
+            ...$this->extractPokemonStats($pokemonData),
             "type" => $this->extractPokemonType($pokemonData),
             "abilities" => $this->extractPokemonAbilities($pokemonData)
         ];
@@ -67,15 +67,14 @@ class ClientPokeApiDto
 
     private function extractPokemonStats(array $pokemonData): array
     {
-        $pokemonStats = $pokemonData["stats"];
-        $pokemonStats = array_map(function (array $pokemonStat) {
+        $pokemonData = $pokemonData["stats"];
 
-            $baseStat = $pokemonStat["base_stat"];
-            return [
-                "name" => $pokemonStat["stat"]["name"],
-                "value" => $baseStat
-            ];
-        }, $pokemonStats);
+        $pokemonStats = [];
+        foreach ($pokemonData as $statValue) {
+
+            $baseStat = $statValue["base_stat"];
+            $pokemonStats[$statValue["stat"]["name"]] = $baseStat;
+        }
 
         return $pokemonStats;
     }
