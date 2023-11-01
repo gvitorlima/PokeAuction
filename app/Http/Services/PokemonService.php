@@ -47,6 +47,7 @@ class PokemonService
     /**
      * Busca o pokemon pelo ID no banco, caso não exista é realizada a requisição para o serviço da
      * PokeApi e retornado ao cliente.
+     * @param int $pokemonId,   Identificador do respectivo Pokemon
      */
     public function pokemonById(int $pokemonId)
     {
@@ -58,11 +59,28 @@ class PokemonService
         return $pokemonData;
     }
 
-    public function pokemonsById(array $pokemonIds)
+    /**
+     * Busca por vários Pokemons presentes no array informado
+     * @param array $pokemonIds,    Array de ID's dos pokemons sendo buscados
+     */
+    public function pokemonByIds(array $pokemonIds)
     {
         $this->validatorPokemonId($pokemonIds);
     }
 
+    /**
+     * Busca o pokemon pelo NOME no banco, caso não exista é realizada a requisição para o serviço da
+     * PokeApi e retornado ao cliente.
+     * @param string $pokemonName,  Nome do pokemon a ser buscado
+     */
+    public function pokemonByName(string $pokemonName)
+    {
+        $pokemon =  $this->requestExternalService($pokemonName);
+    }
+
+    /**
+     * Valida se os IDS batem com as condições do projeto/API usada na requisição
+     */
     private function validatorPokemonId(int|array $pokemonField): void
     {
         if (is_int($pokemonField)) {
@@ -99,16 +117,15 @@ class PokemonService
 
             DB::commit();
         } catch (Exception $error) {
-
             DB::rollBack();
-            echo '<pre>';
-            print_r($error->getMessage());
-            echo '</pre>';
-            exit;
             throw $error;
         }
     }
 
+    /**
+     * Cria um novo Pokemon no banco com os dados já formatados vindos do DTO
+     * @param array $pokemonData,   Array contendo os dados de um novo pokemon
+     */
     private function createPokemon(array $pokemonData): Pokemon
     {
         $pokemonObject = $this->modelPokemon::create($pokemonData);
@@ -116,9 +133,9 @@ class PokemonService
     }
 
     /**
-     * Função contendo a lógica de agregação de valores/relacionamentos dos tipos de um pokemon especifico
-     *
-     * @param array $pokemonTypes   , Array contendo os tipos do pokemon especifico
+     * Método que compõe as tabelas vinculadas a um Pokemon
+     * @param Pokemon,  Um objeto de Pokemon
+     * @param array,    Array contendo os typos do respectivo pokemon
      */
     private function composePokemonWithTypes(Pokemon $pokemon, array $pokemonTypes): void
     {
@@ -135,6 +152,10 @@ class PokemonService
         }
     }
 
+    /**
+     * Método que compõe um pokemon com seus status (atk, def...)
+     * @param array $pokemonData,   Dados já formatados retornados de um pokemon
+     */
     private function composePokemonWithStatus(array $pokemonData): void
     {
         $pokemonData["specialAttack"]  = $pokemonData["special-attack"];
@@ -143,13 +164,18 @@ class PokemonService
         $this->modelPokemonStatus::create($pokemonData);
     }
 
+    /**
+     * Compõe um Pokemon com suas Habilidades
+     * @param Pokemon $pokemon,         Objeto de um Pokemon
+     * @param array $pokemonAbilities,  Array contendo as habilidades de um pokemon
+     */
     private function composePokemonWithAbilities(Pokemon $pokemon, array $pokemonAbilities): void
     {
         foreach ($pokemonAbilities as $ability) {
 
             $pokemonAbility = $this->modelAbility->replicate();
             $pokemonAbility = $pokemonAbility->getByName($ability["name"])
-            ->get()->first();
+                ->get()->first();
 
             if (empty($pokemonAbility)) {
                 $pokemonAbility = $this->modelAbility->replicate()->fill($ability);
@@ -161,15 +187,6 @@ class PokemonService
                 "ability_id" => $pokemonAbility->id
             ]);
         }
-    }
-
-    /**
-     * Busca o pokemon pelo NOME no banco, caso não exista é realizada a requisição para o serviço da
-     * PokeApi e retornado ao cliente.
-     */
-    public function pokemonByName(string $pokemonName)
-    {
-        $pokemon =  $this->requestExternalService($pokemonName);
     }
 
     /**
@@ -193,7 +210,7 @@ class PokemonService
     /**
      * Concatena a URL de pesquisa com o ID ou NOME do pokemon
      *
-     * @param int $searchParam, ID do pokemon
+     * @param int|string $searchParam, ID ou NOME do pokemon
      */
     private function mountPokemonUrlById(int|string $searchParam): string
     {
